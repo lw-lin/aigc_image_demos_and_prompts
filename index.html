@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>图片详情表格</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        td {
+            padding: 20px;
+            text-align: center;
+            border: 1px solid #ddd;
+            vertical-align: middle;
+        }
+        
+        .cell-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .cell-content img {
+            max-width: 150px;
+            max-height: 150px;
+            object-fit: contain;
+        }
+        
+        .detail-text {
+            color: #999;
+            cursor: help;
+            position: relative;
+        }
+        
+        .tooltip {
+            display: none;
+            position: absolute;
+            bottom: calc(100% + 10px);
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #333;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            text-align: left;
+            white-space: pre-line;
+            user-select: text;
+            -webkit-user-select: text;
+            -moz-user-select: text;
+            -ms-user-select: text;
+            pointer-events: auto;
+            min-width: 100px;
+        }
+        
+        .tooltip::after {
+            content: "";
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border: 5px solid transparent;
+            border-top-color: #333;
+            margin-top: -1px;
+        }
+        
+        .detail-text:hover .tooltip,
+        .tooltip:hover {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <table>
+        <tr>
+            <td rowspan="2">A</td>
+            <td>
+                <div class="cell-content">
+                    <img src="details/aaa/img.jpg" alt="图片">
+                    <span class="detail-text">detail
+                        <div class="tooltip">标题
+
+details</div>
+                    </span>
+                </div>
+            </td>
+            <td>
+                <div class="cell-content">
+                    <img src="details/aaa/img.jpg" alt="图片">
+                    <span class="detail-text">detail
+                        <div class="tooltip">标题
+
+details</div>
+                    </span>
+                </div>
+            </td>
+            <td>
+                <div class="cell-content">
+                    <img src="details/aaa/img.jpg" alt="图片">
+                    <span class="detail-text">detail
+                        <div class="tooltip">标题
+
+details</div>
+                    </span>
+                </div>
+            </td>
+            <td>
+                <div class="cell-content">
+                    <img src="details/aaa/img.jpg" alt="图片">
+                    <span class="detail-text">detail
+                        <div class="tooltip">标题
+
+details</div>
+                    </span>
+                </div>
+            </td>
+            <td>
+                <div class="cell-content">
+                    <img src="details/aaa/img.jpg" alt="图片">
+                    <span class="detail-text">detail
+                        <div class="tooltip">标题
+
+details</div>
+                    </span>
+                </div>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <div class="cell-content">
+                    <img src="details/aaa/img.jpg" alt="图片">
+                    <span class="detail-text">detail
+                        <div class="tooltip">标题
+
+details</div>
+                    </span>
+                </div>
+            </td>
+            <td>
+                <div class="cell-content">
+                    <img src="details/aaa/img.jpg" alt="图片">
+                    <span class="detail-text">detail
+                        <div class="tooltip">标题
+
+details</div>
+                    </span>
+                </div>
+            </td>
+            <td>
+                <div class="cell-content">
+                    <img src="details/aaa/img.jpg" alt="图片">
+                    <span class="detail-text">detail
+                        <div class="tooltip">标题
+
+details</div>
+                    </span>
+                </div>
+            </td>
+            <td>
+                <div class="cell-content">
+                    <img src="details/aaa/img.jpg" alt="图片">
+                    <span class="detail-text">detail
+                        <div class="tooltip">标题
+
+details</div>
+                    </span>
+                </div>
+            </td>
+            <td>
+                <div class="cell-content">
+                    <img src="details/aaa/img.jpg" alt="图片">
+                    <span class="detail-text">detail
+                        <div class="tooltip">标题
+
+details</div>
+                    </span>
+                </div>
+            </td>
+        </tr>
+        <tr>
+            <td>B</td>
+            <td>
+                <div class="cell-content">
+                    <img src="details/aaa/img.jpg" alt="图片">
+                    <span class="detail-text">detail
+                        <div class="tooltip">标题
+
+details</div>
+                    </span>
+                </div>
+            </td>
+            <td>
+                <div class="cell-content">
+                    <img src="details/aaa/img.jpg" alt="图片">
+                    <span class="detail-text">detail
+                        <div class="tooltip">标题
+
+details</div>
+                    </span>
+                </div>
+            </td>
+            <td>
+                <div class="cell-content">
+                    <img src="details/aaa/img.jpg" alt="图片">
+                    <span class="detail-text">detail
+                        <div class="tooltip">标题
+
+details</div>
+                    </span>
+                </div>
+            </td>
+            <td>
+                <div class="cell-content">
+                    <img src="details/aaa/img.jpg" alt="图片">
+                    <span class="detail-text">detail
+                        <div class="tooltip">标题
+
+details</div>
+                    </span>
+                </div>
+            </td>
+            <td>
+                <div class="cell-content">
+                    <img src="details/aaa/img.jpg" alt="图片">
+                    <span class="detail-text">detail
+                        <div class="tooltip">标题
+
+details</div>
+                    </span>
+                </div>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>
+
