@@ -8,26 +8,26 @@
                 {
                     "category": "A",
                     "cells": [
-                        { "image": "details/aaa/img.jpg", "tooltip": { "title": "标题", "details": "details" } },
-                        { "image": "details/aaa/img.jpg", "tooltip": { "title": "标题", "details": "details" } },
-                        { "image": "details/aaa/img.jpg", "tooltip": { "title": "标题", "details": "details" } },
-                        { "image": "details/aaa/img.jpg", "tooltip": { "title": "标题", "details": "details" } },
-                        { "image": "details/aaa/img.jpg", "tooltip": { "title": "标题", "details": "details" } },
-                        { "image": "details/aaa/img.jpg", "tooltip": { "title": "标题", "details": "details" } },
-                        { "image": "details/aaa/img.jpg", "tooltip": { "title": "标题", "details": "details" } },
-                        { "image": "details/aaa/img.jpg", "tooltip": { "title": "标题", "details": "details" } },
-                        { "image": "details/aaa/img.jpg", "tooltip": { "title": "标题", "details": "details" } },
-                        { "image": "details/aaa/img.jpg", "tooltip": { "title": "标题", "details": "details" } }
+                        { "image": "details/aaa/img.jpg", "desc": "desc", "tooltip": { "source_url": "【source_url】some_url", "prompt": "【prompt】some_prompt", "extra_info": "【extra_info】some_info" } },
+                        { "image": "details/aaa/img.jpg", "desc": "desc", "tooltip": { "source_url": "【source_url】some_url", "prompt": "【prompt】some_prompt", "extra_info": "【extra_info】some_info" } },
+                        { "image": "details/aaa/img.jpg", "desc": "desc", "tooltip": { "source_url": "【source_url】some_url", "prompt": "【prompt】some_prompt", "extra_info": "【extra_info】some_info" } },
+                        { "image": "details/aaa/img.jpg", "desc": "desc", "tooltip": { "source_url": "【source_url】some_url", "prompt": "【prompt】some_prompt", "extra_info": "【extra_info】some_info" } },
+                        { "image": "details/aaa/img.jpg", "desc": "desc", "tooltip": { "source_url": "【source_url】some_url", "prompt": "【prompt】some_prompt", "extra_info": "【extra_info】some_info" } },
+                        { "image": "details/aaa/img.jpg", "desc": "desc", "tooltip": { "source_url": "【source_url】some_url", "prompt": "【prompt】some_prompt", "extra_info": "【extra_info】some_info" } },
+                        { "image": "details/aaa/img.jpg", "desc": "desc", "tooltip": { "source_url": "【source_url】some_url", "prompt": "【prompt】some_prompt", "extra_info": "【extra_info】some_info" } },
+                        { "image": "details/aaa/img.jpg", "desc": "desc", "tooltip": { "source_url": "【source_url】some_url", "prompt": "【prompt】some_prompt", "extra_info": "【extra_info】some_info" } },
+                        { "image": "details/aaa/img.jpg", "desc": "desc", "tooltip": { "source_url": "【source_url】some_url", "prompt": "【prompt】some_prompt", "extra_info": "【extra_info】some_info" } },
+                        { "image": "details/aaa/img.jpg", "desc": "desc", "tooltip": { "source_url": "【source_url】some_url", "prompt": "【prompt】some_prompt", "extra_info": "【extra_info】some_info" } }
                     ]
                 },
                 {
                     "category": "B",
                     "cells": [
-                        { "image": "details/aaa/img.jpg", "tooltip": { "title": "标题", "details": "details" } },
-                        { "image": "details/aaa/img.jpg", "tooltip": { "title": "标题", "details": "details" } },
-                        { "image": "details/aaa/img.jpg", "tooltip": { "title": "标题", "details": "details" } },
-                        { "image": "details/aaa/img.jpg", "tooltip": { "title": "标题", "details": "details" } },
-                        { "image": "details/aaa/img.jpg", "tooltip": { "title": "标题", "details": "details" } }
+                        { "image": "details/aaa/img.jpg", "desc": "desc", "tooltip": { "source_url": "【source_url】some_url", "prompt": "【prompt】some_prompt", "extra_info": "【extra_info】some_info" } },
+                        { "image": "details/aaa/img.jpg", "desc": "desc", "tooltip": { "source_url": "【source_url】some_url", "prompt": "【prompt】some_prompt", "extra_info": "【extra_info】some_info" } },
+                        { "image": "details/aaa/img.jpg", "desc": "desc", "tooltip": { "source_url": "【source_url】some_url", "prompt": "【prompt】some_prompt", "extra_info": "【extra_info】some_info" } },
+                        { "image": "details/aaa/img.jpg", "desc": "desc", "tooltip": { "source_url": "【source_url】some_url", "prompt": "【prompt】some_prompt", "extra_info": "【extra_info】some_info" } },
+                        { "image": "details/aaa/img.jpg", "desc": "desc", "tooltip": { "source_url": "【source_url】some_url", "prompt": "【prompt】some_prompt", "extra_info": "【extra_info】some_info" } }
                     ]
                 }
             ]
@@ -88,13 +88,14 @@
                         
                         const detailText = document.createElement('span');
                         detailText.className = 'detail-text';
-                        detailText.textContent = 'detail';
+                        detailText.textContent = cell.desc || 'detail';
                         
                         const tooltip = document.createElement('div');
                         tooltip.className = 'tooltip';
-                        const title = cell.tooltip.title || '';
-                        const details = cell.tooltip.details || '';
-                        tooltip.textContent = title + '\n\n' + details;
+                        const source_url = cell.tooltip.source_url || '';
+                        const prompt = cell.tooltip.prompt || '';
+                        const extra_info = cell.tooltip.extra_info || '';
+                        tooltip.textContent = source_url + '\n\n' + prompt + '\n\n' + extra_info;
                         
                         detailText.appendChild(tooltip);
                         cellContent.appendChild(detailText);
