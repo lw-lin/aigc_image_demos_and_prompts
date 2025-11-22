@@ -261,9 +261,9 @@ object UpdateHtmlMain {
               "image" -> relativePath,
               "desc" -> level2Name,  // 使用 2 级子目录的名称作为 desc
               "tooltip" -> Map(
-                "source" -> s"【source】$source",
-                "prompt" -> s"【prompt】$prompt",
-                "extra_info" -> s"【extra_info】$extraInfo"
+                "source" -> s"【source】\n$source",
+                "prompt" -> s"【prompt】\n$prompt",
+                "extra_info" -> s"【extra_info】\n$extraInfo"
               )
             )
           }

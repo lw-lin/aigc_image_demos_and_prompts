@@ -1,4 +1,5 @@
 # source
+
 https://mp.weixin.qq.com/s/z49EVjaOQVoqWN1SjpjbNw
 
 # prompt
@@ -49,3 +50,5 @@ https://mp.weixin.qq.com/s/z49EVjaOQVoqWN1SjpjbNw
 高清、质感插画、明亮色调、料理手册风、可视化教学、简单易懂、结构严谨、中文信息图
 
 # extra_info
+
+收集时间：2025.11.22
