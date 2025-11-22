@@ -1,5 +1,7 @@
 import java.io.{File, PrintWriter}
 import java.nio.file.{Files, Paths}
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 import scala.io.Source
 import scala.util.{Try, Success, Failure}
 import scala.util.control.Breaks._
@@ -13,7 +15,9 @@ import scala.util.control.Breaks._
    * 
    * 本程序的主要功能是：
    * 1、检查 details 目录里的数据是否合法
-   * 2、如果合法，则生成 tableData JSON，并更新 index.html 文件；具体：1 级子目录的名称，将作为表格的左侧列的分类名称；2 级子目录的名称，将作为表格里 desc 的具体取值
+   * 2、如果合法，则生成 tableData JSON，并更新 index.html 文件：具体：
+   *   2.1、1 级子目录的名称，将作为表格的左侧列的分类名称；2 级子目录的名称，将作为表格里 desc 的具体取值
+   *   2.2、index.html 文件里的副标题，日期要更新为今天的
    * 3、如果不合法，则打印错误信息
    */
 object UpdateHtmlMain {
@@ -366,9 +370,18 @@ $rowsJson
     }
     
     val newTableData = generateTableData()
-    val updatedContent = htmlContent.substring(0, startIndex) + 
+    var updatedContent = htmlContent.substring(0, startIndex) + 
                         newTableData + 
                         htmlContent.substring(endIndex)
+    
+    // 更新副标题日期为今天的日期
+    val today = LocalDate.now()
+    val dateFormatter = DateTimeFormatter.ofPattern("yyyy.MM.dd")
+    val todayStr = today.format(dateFormatter)
+    val datePattern = """Last Update at \d{4}\.\d{2}\.\d{2}"""
+    val newDateText = s"Last Update at $todayStr"
+    
+    updatedContent = updatedContent.replaceAll(datePattern, newDateText)
     
     // 写入文件
     val writer = new PrintWriter(indexHtmlPath, "UTF-8")
