@@ -1,6 +1,6 @@
 # source
 
-https://mp.weixin.qq.com/s/zZNFsWbAPgj7Hc-zLzC5YA
+some source url
 
 # prompt
 
@@ -8,4 +8,4 @@ some prompt
 
 # extra_info
 
-收集时间：2025.11.22
+收集时间：2025.xx.yy
