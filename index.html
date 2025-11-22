@@ -1,6 +1,127 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
+    <script>
+        // 表格数据 JSON
+        const tableData = {
+            "rows": [
+                {
+                    "category": "A",
+                    "cells": [
+                        { "image": "details/aaa/img.jpg", "tooltip": { "title": "标题", "details": "details" } },
+                        { "image": "details/aaa/img.jpg", "tooltip": { "title": "标题", "details": "details" } },
+                        { "image": "details/aaa/img.jpg", "tooltip": { "title": "标题", "details": "details" } },
+                        { "image": "details/aaa/img.jpg", "tooltip": { "title": "标题", "details": "details" } },
+                        { "image": "details/aaa/img.jpg", "tooltip": { "title": "标题", "details": "details" } },
+                        { "image": "details/aaa/img.jpg", "tooltip": { "title": "标题", "details": "details" } },
+                        { "image": "details/aaa/img.jpg", "tooltip": { "title": "标题", "details": "details" } },
+                        { "image": "details/aaa/img.jpg", "tooltip": { "title": "标题", "details": "details" } },
+                        { "image": "details/aaa/img.jpg", "tooltip": { "title": "标题", "details": "details" } },
+                        { "image": "details/aaa/img.jpg", "tooltip": { "title": "标题", "details": "details" } }
+                    ]
+                },
+                {
+                    "category": "B",
+                    "cells": [
+                        { "image": "details/aaa/img.jpg", "tooltip": { "title": "标题", "details": "details" } },
+                        { "image": "details/aaa/img.jpg", "tooltip": { "title": "标题", "details": "details" } },
+                        { "image": "details/aaa/img.jpg", "tooltip": { "title": "标题", "details": "details" } },
+                        { "image": "details/aaa/img.jpg", "tooltip": { "title": "标题", "details": "details" } },
+                        { "image": "details/aaa/img.jpg", "tooltip": { "title": "标题", "details": "details" } }
+                    ]
+                }
+            ]
+        };
+
+        // 动态生成表格
+        function generateTable() {
+            const table = document.createElement('table');
+            const COLUMNS_PER_ROW = 5; // 每行固定 5 列
+            
+            tableData.rows.forEach((row, rowIndex) => {
+                const cells = row.cells || [];
+                const rowsNeeded = Math.ceil(cells.length / COLUMNS_PER_ROW); // 当前行的cells需要多少行
+                
+                // 如果当前行有 category，需要计算 rowspan
+                // rowspan = 当前行的cells需要的行数
+                let categoryRowspan = null;
+                if (row.category) {
+                    categoryRowspan = rowsNeeded;
+                }
+                
+                // 将当前行的cells按每行5个分组
+                for (let rowOffset = 0; rowOffset < rowsNeeded; rowOffset++) {
+                    const tr = document.createElement('tr');
+                    
+                    // 处理左侧列 - 只在第一行创建，并设置 rowspan
+                    if (row.category && rowOffset === 0) {
+                        const leftTd = document.createElement('td');
+                        leftTd.textContent = row.category;
+                        leftTd.setAttribute('rowspan', categoryRowspan);
+                        tr.appendChild(leftTd);
+                    }
+                    
+                    // 计算当前行应该显示的cells范围
+                    const startIndex = rowOffset * COLUMNS_PER_ROW;
+                    const endIndex = Math.min(startIndex + COLUMNS_PER_ROW, cells.length);
+                    
+                    // 处理当前行的单元格
+                    for (let i = startIndex; i < endIndex; i++) {
+                        const cell = cells[i];
+                        if (!cell || !cell.image || !cell.tooltip) {
+                            console.error(`第 ${rowIndex + 1} 行第 ${i + 1} 列的单元格数据不完整`, cell);
+                            // 创建空单元格
+                            const td = document.createElement('td');
+                            tr.appendChild(td);
+                            continue;
+                        }
+                        
+                        const td = document.createElement('td');
+                        
+                        const cellContent = document.createElement('div');
+                        cellContent.className = 'cell-content';
+                        
+                        const img = document.createElement('img');
+                        img.src = cell.image;
+                        img.alt = '图片';
+                        cellContent.appendChild(img);
+                        
+                        const detailText = document.createElement('span');
+                        detailText.className = 'detail-text';
+                        detailText.textContent = 'detail';
+                        
+                        const tooltip = document.createElement('div');
+                        tooltip.className = 'tooltip';
+                        const title = cell.tooltip.title || '';
+                        const details = cell.tooltip.details || '';
+                        tooltip.textContent = title + '\n\n' + details;
+                        
+                        detailText.appendChild(tooltip);
+                        cellContent.appendChild(detailText);
+                        
+                        td.appendChild(cellContent);
+                        tr.appendChild(td);
+                    }
+                    
+                    // 如果单元格不足 5 个，补充空单元格
+                    for (let i = endIndex - startIndex; i < COLUMNS_PER_ROW; i++) {
+                        const td = document.createElement('td');
+                        tr.appendChild(td);
+                    }
+                    
+                    table.appendChild(tr);
+                }
+            });
+            
+            return table;
+        }
+
+        // 页面加载完成后生成表格
+        document.addEventListener('DOMContentLoaded', function() {
+            const table = generateTable();
+            document.body.appendChild(table);
+        });
+    </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>图片详情表格</title>
@@ -85,166 +206,6 @@
     </style>
 </head>
 <body>
-    <table>
-        <tr>
-            <td rowspan="2">A</td>
-            <td>
-                <div class="cell-content">
-                    <img src="details/aaa/img.jpg" alt="图片">
-                    <span class="detail-text">detail
-                        <div class="tooltip">标题
-
-details</div>
-                    </span>
-                </div>
-            </td>
-            <td>
-                <div class="cell-content">
-                    <img src="details/aaa/img.jpg" alt="图片">
-                    <span class="detail-text">detail
-                        <div class="tooltip">标题
-
-details</div>
-                    </span>
-                </div>
-            </td>
-            <td>
-                <div class="cell-content">
-                    <img src="details/aaa/img.jpg" alt="图片">
-                    <span class="detail-text">detail
-                        <div class="tooltip">标题
-
-details</div>
-                    </span>
-                </div>
-            </td>
-            <td>
-                <div class="cell-content">
-                    <img src="details/aaa/img.jpg" alt="图片">
-                    <span class="detail-text">detail
-                        <div class="tooltip">标题
-
-details</div>
-                    </span>
-                </div>
-            </td>
-            <td>
-                <div class="cell-content">
-                    <img src="details/aaa/img.jpg" alt="图片">
-                    <span class="detail-text">detail
-                        <div class="tooltip">标题
-
-details</div>
-                    </span>
-                </div>
-            </td>
-        </tr>
-        <tr>
-            <td>
-                <div class="cell-content">
-                    <img src="details/aaa/img.jpg" alt="图片">
-                    <span class="detail-text">detail
-                        <div class="tooltip">标题
-
-details</div>
-                    </span>
-                </div>
-            </td>
-            <td>
-                <div class="cell-content">
-                    <img src="details/aaa/img.jpg" alt="图片">
-                    <span class="detail-text">detail
-                        <div class="tooltip">标题
-
-details</div>
-                    </span>
-                </div>
-            </td>
-            <td>
-                <div class="cell-content">
-                    <img src="details/aaa/img.jpg" alt="图片">
-                    <span class="detail-text">detail
-                        <div class="tooltip">标题
-
-details</div>
-                    </span>
-                </div>
-            </td>
-            <td>
-                <div class="cell-content">
-                    <img src="details/aaa/img.jpg" alt="图片">
-                    <span class="detail-text">detail
-                        <div class="tooltip">标题
-
-details</div>
-                    </span>
-                </div>
-            </td>
-            <td>
-                <div class="cell-content">
-                    <img src="details/aaa/img.jpg" alt="图片">
-                    <span class="detail-text">detail
-                        <div class="tooltip">标题
-
-details</div>
-                    </span>
-                </div>
-            </td>
-        </tr>
-        <tr>
-            <td>B</td>
-            <td>
-                <div class="cell-content">
-                    <img src="details/aaa/img.jpg" alt="图片">
-                    <span class="detail-text">detail
-                        <div class="tooltip">标题
-
-details</div>
-                    </span>
-                </div>
-            </td>
-            <td>
-                <div class="cell-content">
-                    <img src="details/aaa/img.jpg" alt="图片">
-                    <span class="detail-text">detail
-                        <div class="tooltip">标题
-
-details</div>
-                    </span>
-                </div>
-            </td>
-            <td>
-                <div class="cell-content">
-                    <img src="details/aaa/img.jpg" alt="图片">
-                    <span class="detail-text">detail
-                        <div class="tooltip">标题
-
-details</div>
-                    </span>
-                </div>
-            </td>
-            <td>
-                <div class="cell-content">
-                    <img src="details/aaa/img.jpg" alt="图片">
-                    <span class="detail-text">detail
-                        <div class="tooltip">标题
-
-details</div>
-                    </span>
-                </div>
-            </td>
-            <td>
-                <div class="cell-content">
-                    <img src="details/aaa/img.jpg" alt="图片">
-                    <span class="detail-text">detail
-                        <div class="tooltip">标题
-
-details</div>
-                    </span>
-                </div>
-            </td>
-        </tr>
-    </table>
 </body>
 </html>
 
