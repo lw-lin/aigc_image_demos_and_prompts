@@ -6,14 +6,14 @@ import scala.util.control.Breaks._
 
 /**
    * 我们对 details 目录里的数据做如下设计：
-   * 1、details 目录里，只能有子文件夹（记为 1 级子目录）、不能有子文件；每个 1 级子目录里，只能有子文件、不能有子文件夹
-   * 2、1 级子目录里，必须有 prompts_and_details.md 文件；且文件内容里，必须且只能有：source、prompt、extra_info 这 3 个 #一级标题
-   * 3、1 级子目录里，必须有一个图片文件，它的名字是 img，扩展名限制为 jpg、jpeg、png、gif、webp
-   * 4、1 级子目录里，如果有其它文件，必须以 extra_ 开头
+   * 1、details 目录里，只能有子文件夹（记为 1 级子目录）、不能有子文件；每个 1 级子目录里，只能有子文件夹（记为 2 级子目录）、不能有子文件
+   * 2、2 级子目录里，必须有 prompts_and_details.md 文件；且文件内容里，必须且只能有：source、prompt、extra_info 这 3 个 #一级标题
+   * 3、2 级子目录里，必须有一个图片文件，它的名字是 img，扩展名限制为 jpg、jpeg、png、gif、webp
+   * 4、2 级子目录里，如果有其它文件，必须以 extra_ 开头
    * 
    * 本程序的主要功能是：
    * 1、检查 details 目录里的数据是否合法
-   * 2、如果合法，则生成 tableData JSON，并更新 index.html 文件
+   * 2、如果合法，则生成 tableData JSON，并更新 index.html 文件；具体：1 级子目录的名称，将作为表格的左侧列的分类名称；2 级子目录的名称，将作为表格里 desc 的具体取值
    * 3、如果不合法，则打印错误信息
    */
 object UpdateHtmlMain {
@@ -55,49 +55,58 @@ object UpdateHtmlMain {
     level1Dirs.foreach { level1Dir =>
       val level1Name = level1Dir.getName
       
-      // 检查 1 级子目录下不能有子文件夹
-      val level1SubDirs = level1Dir.listFiles().filter(_.isDirectory).toList
-      if (level1SubDirs.nonEmpty) {
-        println(s"错误：1 级子目录 '$level1Name' 下不能有子文件夹，但发现了：${level1SubDirs.map(_.getName).mkString(", ")}")
+      // 检查 1 级子目录下不能有文件，只能有子文件夹（2级子目录）
+      val level1Files = level1Dir.listFiles().filter(_.isFile).toList
+      if (level1Files.nonEmpty) {
+        println(s"错误：1 级子目录 '$level1Name' 下不能有文件，但发现了：${level1Files.map(_.getName).mkString(", ")}")
         hasError = true
       }
       
-      // 获取 1 级子目录下的所有文件
-      val allFiles = level1Dir.listFiles().filter(_.isFile).toList
+      // 获取 2 级子目录
+      val level2Dirs = level1Dir.listFiles().filter(_.isDirectory).toList
       
-      // 2. 检查 prompts_and_details.md 文件
-      val mdFile = new File(level1Dir, "prompts_and_details.md")
-      if (!mdFile.exists()) {
-        println(s"错误：1 级子目录 '$level1Name' 中缺少 prompts_and_details.md 文件")
-        hasError = true
-      } else {
-        // 检查 markdown 文件内容
-        checkMarkdownContent(mdFile, level1Name) match {
-          case Some(error) =>
-            println(error)
-            hasError = true
-          case None => // 检查通过
-        }
-      }
-      
-      // 3. 检查图片文件（img.*，扩展名限制为 jpg、jpeg、png、gif、webp）
-      val imgFileNames = imageExtensions.map(ext => s"img$ext")
-      val imgFiles = imgFileNames.map(name => new File(level1Dir, name))
-      val foundImgFile = imgFiles.find(_.exists())
-      if (foundImgFile.isEmpty) {
-        val allowedExts = imageExtensions.mkString("、")
-        println(s"错误：1 级子目录 '$level1Name' 中缺少 img.* 格式的图片文件（扩展名限制为：$allowedExts）")
-        hasError = true
-      }
-      
-      // 4. 检查其他文件是否以 extra_ 开头
-      val requiredFiles = Set("prompts_and_details.md") ++ imgFileNames
-      val otherFiles = allFiles.filter(f => !requiredFiles.contains(f.getName))
-      
-      otherFiles.foreach { file =>
-        if (!file.getName.startsWith("extra_")) {
-          println(s"错误：1 级子目录 '$level1Name' 中的文件 '${file.getName}' 必须以 extra_ 开头")
+      // 遍历每个 2 级子目录
+      level2Dirs.foreach { level2Dir =>
+        val level2Name = level2Dir.getName
+        val fullPath = s"$level1Name/$level2Name"
+        
+        // 获取 2 级子目录下的所有文件
+        val allFiles = level2Dir.listFiles().filter(_.isFile).toList
+        
+        // 2. 检查 prompts_and_details.md 文件
+        val mdFile = new File(level2Dir, "prompts_and_details.md")
+        if (!mdFile.exists()) {
+          println(s"错误：2 级子目录 '$fullPath' 中缺少 prompts_and_details.md 文件")
           hasError = true
+        } else {
+          // 检查 markdown 文件内容
+          checkMarkdownContent(mdFile, fullPath) match {
+            case Some(error) =>
+              println(error)
+              hasError = true
+            case None => // 检查通过
+          }
+        }
+        
+        // 3. 检查图片文件（img.*，扩展名限制为 jpg、jpeg、png、gif、webp）
+        val imgFileNames = imageExtensions.map(ext => s"img$ext")
+        val imgFiles = imgFileNames.map(name => new File(level2Dir, name))
+        val foundImgFile = imgFiles.find(_.exists())
+        if (foundImgFile.isEmpty) {
+          val allowedExts = imageExtensions.mkString("、")
+          println(s"错误：2 级子目录 '$fullPath' 中缺少 img.* 格式的图片文件（扩展名限制为：$allowedExts）")
+          hasError = true
+        }
+        
+        // 4. 检查其他文件是否以 extra_ 开头
+        val requiredFiles = Set("prompts_and_details.md") ++ imgFileNames
+        val otherFiles = allFiles.filter(f => !requiredFiles.contains(f.getName))
+        
+        otherFiles.foreach { file =>
+          if (!file.getName.startsWith("extra_")) {
+            println(s"错误：2 级子目录 '$fullPath' 中的文件 '${file.getName}' 必须以 extra_ 开头")
+            hasError = true
+          }
         }
       }
     }
@@ -127,69 +136,72 @@ object UpdateHtmlMain {
       // 检查是否包含所有必需的标题
       val missingTitles = requiredTitles -- foundTitles
       if (missingTitles.nonEmpty) {
-        Some(s"错误：1 级子目录 '$dirPath' 的 prompts_and_details.md 中缺少一级标题：${missingTitles.mkString(", ")}")
+        Some(s"错误：2 级子目录 '$dirPath' 的 prompts_and_details.md 中缺少一级标题：${missingTitles.mkString(", ")}")
       } else {
         // 检查是否只有这三个标题（允许重复，但只允许这三个）
         val extraTitles = foundTitles -- requiredTitles
         if (extraTitles.nonEmpty) {
-          Some(s"错误：1 级子目录 '$dirPath' 的 prompts_and_details.md 中只能有 source、prompt、extra_info 三个一级标题，但发现了：${extraTitles.mkString(", ")}")
+          Some(s"错误：2 级子目录 '$dirPath' 的 prompts_and_details.md 中只能有 source、prompt、extra_info 三个一级标题，但发现了：${extraTitles.mkString(", ")}")
         } else {
           None
         }
       }
     } match {
       case Success(result) => result
-      case Failure(e) => Some(s"错误：读取 1 级子目录 '$dirPath' 的 prompts_and_details.md 文件失败：${e.getMessage}")
+      case Failure(e) => Some(s"错误：读取 2 级子目录 '$dirPath' 的 prompts_and_details.md 文件失败：${e.getMessage}")
     }
   }
 
-  // 从 markdown 文件中提取标题和详情
-  def extractTitleAndDetails(mdFile: File): (String, String) = {
+  // 从 markdown 文件中提取 source、prompt、extra_info 三个部分
+  def extractMarkdownSections(mdFile: File): (String, String, String) = {
     if (!mdFile.exists()) {
-      return ("标题", "details")
+      return ("", "", "")
     }
     
     Try {
       val content = Source.fromFile(mdFile, "UTF-8").mkString
       val lines = content.split("\n").toList
       
-      // 尝试提取标题：查找包含"标题："的行
-      val title = lines.find(_.contains("标题：")) match {
-        case Some(line) => 
-          val index = line.indexOf("标题：")
-          if (index >= 0) {
-            val titlePart = line.substring(index + "标题：".length).trim
-            if (titlePart.nonEmpty) titlePart else "标题"
-          } else {
-            "标题"
-          }
-        case None => 
-          // 如果没有找到"标题："，尝试从 prompt 部分提取
-          val promptIndex = lines.indexWhere(_.contains("# prompt"))
-          if (promptIndex >= 0 && promptIndex + 1 < lines.length) {
-            val promptLine = lines(promptIndex + 1).trim
-            if (promptLine.nonEmpty && !promptLine.startsWith("#")) {
-              promptLine.take(50) // 限制长度
-            } else {
-              "标题"
-            }
-          } else {
-            "标题"
-          }
-      }
+      // 提取 source 部分
+      val source = extractSection(lines, "# source", "# prompt")
       
-      // details 使用整个文件内容，但限制长度
-      val details = if (content.length > 500) {
-        content.take(500) + "..."
-      } else {
-        content
-      }
+      // 提取 prompt 部分
+      val prompt = extractSection(lines, "# prompt", "# extra_info")
       
-      (title, details)
+      // 提取 extra_info 部分
+      val extraInfo = extractSection(lines, "# extra_info", null)
+      
+      (source, prompt, extraInfo)
     } match {
       case Success(result) => result
-      case Failure(_) => ("标题", "details")
+      case Failure(_) => ("", "", "")
     }
+  }
+  
+  // 提取两个标题之间的内容
+  def extractSection(lines: List[String], startMarker: String, endMarker: String | Null): String = {
+    val startIndex = lines.indexWhere(_.trim.toLowerCase == startMarker.toLowerCase)
+    if (startIndex < 0) {
+      return ""
+    }
+    
+    val endIndex = if (endMarker != null && endMarker.nonEmpty) {
+      lines.indexWhere(_.trim.toLowerCase == endMarker.toLowerCase, startIndex + 1)
+    } else {
+      -1
+    }
+    
+    val sectionLines = if (endIndex > 0) {
+      lines.slice(startIndex + 1, endIndex)
+    } else {
+      lines.drop(startIndex + 1)
+    }
+    
+    sectionLines
+      .map(_.trim)
+      .filter(_.nonEmpty)
+      .mkString("\n")
+      .trim
   }
   
   // 查找目录中的图片文件（查找 img.* 格式，扩展名限制为 jpg、jpeg、png、gif、webp）
@@ -223,24 +235,38 @@ object UpdateHtmlMain {
       .map { level1Dir =>
         val category = level1Dir.getName
         
-        // 查找 1 级目录下的图片和 markdown
-        val level1Image = findImageFile(level1Dir)
-        val level1Md = new File(level1Dir, "prompts_and_details.md")
-        val (level1Title, level1Details) = extractTitleAndDetails(level1Md)
+        // 获取 2 级子目录
+        val level2Dirs = level1Dir.listFiles()
+          .filter(_.isDirectory)
+          .sortBy(_.getName)
+          .toList
         
-        // 收集所有 cells（1 级目录下的图片）
+        // 收集所有 cells（2 级目录下的图片）
         val cells = scala.collection.mutable.ListBuffer[Map[String, Any]]()
         
-        // 如果 1 级目录有图片，添加到 cells
-        level1Image.foreach { img =>
-          val relativePath = s"details/${category}/${img.getName}"
-          cells += Map(
-            "image" -> relativePath,
-            "tooltip" -> Map(
-              "title" -> level1Title,
-              "details" -> level1Details
+        // 遍历每个 2 级子目录
+        level2Dirs.foreach { level2Dir =>
+          val level2Name = level2Dir.getName
+          
+          // 查找 2 级目录下的图片和 markdown
+          val level2Image = findImageFile(level2Dir)
+          val level2Md = new File(level2Dir, "prompts_and_details.md")
+          val (source, prompt, extraInfo) = extractMarkdownSections(level2Md)
+          
+          // 如果 2 级目录有图片，添加到 cells
+          // 2 级子目录的名称作为 desc 的值
+          level2Image.foreach { img =>
+            val relativePath = s"details/${category}/${level2Name}/${img.getName}"
+            cells += Map(
+              "image" -> relativePath,
+              "desc" -> level2Name,  // 使用 2 级子目录的名称作为 desc
+              "tooltip" -> Map(
+                "source" -> s"【source】$source",
+                "prompt" -> s"【prompt】$prompt",
+                "extra_info" -> s"【extra_info】$extraInfo"
+              )
             )
-          )
+          }
         }
         
         Map(
@@ -258,11 +284,13 @@ object UpdateHtmlMain {
       
       val cellsJson = cells.map { cell =>
         val image = cell("image").asInstanceOf[String]
+        val desc = cell("desc").asInstanceOf[String]
         val tooltip = cell("tooltip").asInstanceOf[Map[String, String]]
-        val title = tooltip("title")
-        val details = tooltip("details")
+        val source = tooltip("source")
+        val prompt = tooltip("prompt")
+        val extraInfo = tooltip("extra_info")
         
-        s"""                        { "image": ${escapeJson(image)}, "tooltip": { "title": ${escapeJson(title)}, "details": ${escapeJson(details)} } }"""
+        s"""                        { "image": ${escapeJson(image)}, "desc": ${escapeJson(desc)}, "tooltip": { "source": ${escapeJson(source)}, "prompt": ${escapeJson(prompt)}, "extra_info": ${escapeJson(extraInfo)} } }"""
       }.mkString(",\n")
       
       s"""                {
@@ -273,7 +301,7 @@ $cellsJson
                 }"""
     }.mkString(",\n")
     
-    s"""        const tableData = {
+    s"""const tableData = {
             "rows": [
 $rowsJson
             ]
