@@ -4,7 +4,7 @@
 
 # prompt
 
-未提供
+非 AIGC
 
 # extra_info
 
