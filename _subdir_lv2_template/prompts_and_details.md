@@ -1,10 +1,10 @@
 # source
 
-微信（朋友圈/群等）；some source url
+微信（朋友圈/群等）；some source
 
 # prompt
 
-非 AIGC；some prompt
+非 AIGC；未提供；some prompt
 
 # extra_info
 
