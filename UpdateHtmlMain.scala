@@ -10,7 +10,7 @@ import scala.util.control.Breaks._
    * 我们对 details 目录里的数据做如下设计：
    * 1、details 目录里，只能有子文件夹（记为 1 级子目录）、不能有子文件；每个 1 级子目录里，只能有子文件夹（记为 2 级子目录）、不能有子文件
    * 2、2 级子目录里，必须有 prompts_and_details.md 文件；且文件内容里，必须且只能有：source、prompt、extra_info 这 3 个 #一级标题
-   * 3、2 级子目录里，必须有一个图片文件，它的名字是 img，扩展名限制为 jpg、jpeg、png、gif、webp
+   * 3、2 级子目录里，必须有一个图片文件，它的名字是 img，扩展名限制为（大小写均可）：jpg、jpeg、png、gif、webp
    * 4、2 级子目录里，如果有其它文件，必须以 extra_ 开头
    * 
    * 本程序的主要功能是：
@@ -92,19 +92,21 @@ object UpdateHtmlMain {
           }
         }
         
-        // 3. 检查图片文件（img.*，扩展名限制为 jpg、jpeg、png、gif、webp）
-        val imgFileNames = imageExtensions.map(ext => s"img$ext")
-        val imgFiles = imgFileNames.map(name => new File(level2Dir, name))
-        val foundImgFile = imgFiles.find(_.exists())
+        // 3. 检查图片文件（img.*，扩展名限制为 jpg、jpeg、png、gif、webp，大小写均可）
+        val foundImgFile = findImageFile(level2Dir)
         if (foundImgFile.isEmpty) {
           val allowedExts = imageExtensions.mkString("、")
-          println(s"错误：2 级子目录 '$fullPath' 中缺少 img.* 格式的图片文件（扩展名限制为：$allowedExts）")
+          println(s"错误：2 级子目录 '$fullPath' 中缺少 img.* 格式的图片文件（扩展名限制为：$allowedExts，大小写均可）")
           hasError = true
         }
         
         // 4. 检查其他文件是否以 extra_ 开头
-        val requiredFiles = Set("prompts_and_details.md") ++ imgFileNames
-        val otherFiles = allFiles.filter(f => !requiredFiles.contains(f.getName))
+        val otherFiles = allFiles.filter { file =>
+          val name = file.getName
+          val nameLower = name.toLowerCase
+          // 排除 prompts_and_details.md 和所有 img.* 文件（大小写不敏感）
+          nameLower != "prompts_and_details.md" && !(nameLower.startsWith("img.") && imageExtensions.exists(ext => nameLower == s"img$ext"))
+        }
         
         otherFiles.foreach { file =>
           if (!file.getName.startsWith("extra_")) {
@@ -208,7 +210,7 @@ object UpdateHtmlMain {
       .trim
   }
   
-  // 查找目录中的图片文件（查找 img.* 格式，扩展名限制为 jpg、jpeg、png、gif、webp）
+  // 查找目录中的图片文件（查找 img.* 格式，扩展名限制为 jpg、jpeg、png、gif、webp，大小写均可）
   def findImageFile(dir: File): Option[File] = {
     if (!dir.exists() || !dir.isDirectory) {
       return None
