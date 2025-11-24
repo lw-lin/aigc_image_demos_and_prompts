@@ -1,6 +1,6 @@
 # source
 
-some source
+微信（朋友圈/群等）
 
 # prompt
 
