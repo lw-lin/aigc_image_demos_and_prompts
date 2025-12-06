@@ -209,6 +209,15 @@
                         
                         const td = document.createElement('td');
                         
+                        // 根据图片路径判断来源，添加相应的 class
+                        const isDetailsAll = cell.image.startsWith('details_all/');
+                        if (isDetailsAll) {
+                            td.classList.add('cell-details-all');
+                            td.style.display = 'none'; // 默认隐藏 details_all
+                        } else {
+                            td.classList.add('cell-details-engineering');
+                        }
+                        
                         const cellContent = document.createElement('div');
                         cellContent.className = 'cell-content';
                         
@@ -369,12 +378,81 @@
             const subtitle = document.createElement('div');
             subtitle.className = 'subtitle';
             subtitle.textContent = 'Last Update at 2025.12.06';
+            
+            // 添加 "show all" 链接
+            const showAllLink = document.createElement('a');
+            showAllLink.href = '#';
+            showAllLink.textContent = 'show all';
+            showAllLink.className = 'show-all-link';
+            showAllLink.style.marginLeft = '20px';
+            showAllLink.style.color = '#fff';
+            showAllLink.style.textDecoration = 'underline';
+            showAllLink.style.cursor = 'pointer';
+            
+            let showAllMode = false;
+            showAllLink.addEventListener('click', function(e) {
+                e.preventDefault();
+                showAllMode = !showAllMode;
+                const allCells = document.querySelectorAll('.cell-details-all');
+                
+                if (showAllMode) {
+                    // 显示所有 details_all 单元格
+                    allCells.forEach(cell => {
+                        cell.style.display = '';
+                    });
+                    showAllLink.textContent = 'hide all';
+                } else {
+                    // 隐藏所有 details_all 单元格
+                    allCells.forEach(cell => {
+                        cell.style.display = 'none';
+                    });
+                    showAllLink.textContent = 'show all';
+                }
+                
+                // 更新行的显示状态：如果一行中所有内容单元格都被隐藏，则隐藏该行
+                const allRows = document.querySelectorAll('table tr');
+                allRows.forEach(tr => {
+                    // 找到所有包含 cell-content 的 td（内容单元格）
+                    const contentTds = Array.from(tr.querySelectorAll('td')).filter(td => {
+                        return td.querySelector('.cell-content') !== null;
+                    });
+                    
+                    if (contentTds.length > 0) {
+                        // 检查是否有可见的内容单元格
+                        const visibleTds = contentTds.filter(td => td.style.display !== 'none');
+                        if (visibleTds.length === 0) {
+                            // 所有内容单元格都被隐藏，隐藏该行
+                            tr.style.display = 'none';
+                        } else {
+                            // 有可见的内容单元格，显示该行
+                            tr.style.display = '';
+                        }
+                    }
+                });
+            });
+            
+            subtitle.appendChild(showAllLink);
             header.appendChild(h1);
             header.appendChild(subtitle);
             document.body.appendChild(header);
             
             const table = generateTable();
             document.body.appendChild(table);
+            
+            // 初始状态下，更新行的显示状态（隐藏所有 details_all 的行）
+            const allRows = document.querySelectorAll('table tr');
+            allRows.forEach(tr => {
+                const contentTds = Array.from(tr.querySelectorAll('td')).filter(td => {
+                    return td.querySelector('.cell-content') !== null;
+                });
+                
+                if (contentTds.length > 0) {
+                    const visibleTds = contentTds.filter(td => td.style.display !== 'none');
+                    if (visibleTds.length === 0) {
+                        tr.style.display = 'none';
+                    }
+                }
+            });
             
             // 为所有 tooltip 添加位置调整和显示/隐藏控制
             const detailTexts = document.querySelectorAll('.detail-text');
