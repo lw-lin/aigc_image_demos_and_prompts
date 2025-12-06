@@ -14,16 +14,16 @@ import scala.util.control.Breaks._
    * 4、2 级子目录里，如果有其它文件，必须以 extra_ 开头
    * 
    * 本程序的主要功能是：
-   * 1、检查 details_personal 和 details_engineering 目录里的数据是否合法
-   * 2、如果合法，则生成 tableData JSON，并更新 index_personal.html 和 index_engineering.html 文件：具体：
+   * 1、检查 details_all 和 details_engineering 目录里的数据是否合法
+   * 2、如果合法，则生成 tableData JSON，并更新 index_all.html 和 index_engineering.html 文件：具体：
    *   2.1、1 级子目录的名称，将作为表格的左侧列的分类名称；2 级子目录的名称，将作为表格里 desc 的具体取值
    *   2.2、HTML 文件里的副标题，日期要更新为今天的
    * 3、如果不合法，则打印错误信息
    */
 object UpdateHtmlMain {
-  val detailsPersonalDir = new File("details_personal")
+  val detailsAllDir = new File("details_all")
   val detailsEngineeringDir = new File("details_engineering")
-  val indexPersonalHtmlPath = "index_personal.html"
+  val indexAllHtmlPath = "index_all.html"
   val indexEngineeringHtmlPath = "index_engineering.html"
   
   // 支持的图片扩展名
@@ -32,12 +32,12 @@ object UpdateHtmlMain {
 
   def main(args: Array[String]): Unit = {
     println("开始生成 tableData...")
-    checkDataDir(detailsPersonalDir, "details_personal")
+    checkDataDir(detailsAllDir, "details_all")
     checkDataDir(detailsEngineeringDir, "details_engineering")
-    // personal 包含 personal 和 engineering 两个目录
+    // all 包含 all 和 engineering 两个目录
     updateIndexHtml(
-      List((detailsPersonalDir, "details_personal"), (detailsEngineeringDir, "details_engineering")),
-      indexPersonalHtmlPath
+      List((detailsAllDir, "details_all"), (detailsEngineeringDir, "details_engineering")),
+      indexAllHtmlPath
     )
     // engineering 只包含 engineering 目录
     updateIndexHtml(
