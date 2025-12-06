@@ -34,8 +34,16 @@ object UpdateHtmlMain {
     println("开始生成 tableData...")
     checkDataDir(detailsPersonalDir, "details_personal")
     checkDataDir(detailsEngineeringDir, "details_engineering")
-    updateIndexHtml(detailsPersonalDir, indexPersonalHtmlPath, "details_personal")
-    updateIndexHtml(detailsEngineeringDir, indexEngineeringHtmlPath, "details_engineering")
+    // personal 包含 personal 和 engineering 两个目录
+    updateIndexHtml(
+      List((detailsPersonalDir, "details_personal"), (detailsEngineeringDir, "details_engineering")),
+      indexPersonalHtmlPath
+    )
+    // engineering 只包含 engineering 目录
+    updateIndexHtml(
+      List((detailsEngineeringDir, "details_engineering")),
+      indexEngineeringHtmlPath
+    )
     println("完成！")
   }
 
@@ -231,61 +239,68 @@ object UpdateHtmlMain {
       }
   }
   
-  // 生成 tableData JSON
-  def generateTableData(detailsDir: File, detailsDirName: String): String = {
-    if (!detailsDir.exists() || !detailsDir.isDirectory) {
-      return """{
-            "rows": []
-        }"""
-    }
+  // 生成 tableData JSON（支持多个目录合并）
+  def generateTableData(detailsDirs: List[(File, String)]): String = {
+    // 收集所有目录的数据，按 category 合并
+    val categoryMap = scala.collection.mutable.Map[String, scala.collection.mutable.ListBuffer[Map[String, Any]]]()
     
-    val rows = detailsDir.listFiles()
-      .filter(_.isDirectory)
-      .sortBy(_.getName)
-      .map { level1Dir =>
-        val category = level1Dir.getName
-        
-        // 获取 2 级子目录
-        val level2Dirs = level1Dir.listFiles()
+    detailsDirs.foreach { case (detailsDir, detailsDirName) =>
+      if (detailsDir.exists() && detailsDir.isDirectory) {
+        detailsDir.listFiles()
           .filter(_.isDirectory)
           .sortBy(_.getName)
-          .toList
-        
-        // 收集所有 cells（2 级目录下的图片）
-        val cells = scala.collection.mutable.ListBuffer[Map[String, Any]]()
-        
-        // 遍历每个 2 级子目录
-        level2Dirs.foreach { level2Dir =>
-          val level2Name = level2Dir.getName
-          
-          // 查找 2 级目录下的图片和 markdown
-          val level2Image = findImageFile(level2Dir)
-          val level2Md = new File(level2Dir, "prompts_and_details.md")
-          val (source, prompt, extraInfo) = extractMarkdownSections(level2Md)
-          
-          // 如果 2 级目录有图片，添加到 cells
-          // 2 级子目录的名称作为 desc 的值
-          level2Image.foreach { img =>
-            val relativePath = s"$detailsDirName/${category}/${level2Name}/${img.getName}"
-            cells += Map(
-              "image" -> relativePath,
-              "desc" -> level2Name,  // 使用 2 级子目录的名称作为 desc
-              "tooltip" -> Map(
-                "source" -> s"【source】\n$source",
-                "prompt" -> s"【prompt】\n$prompt",
-                "extra_info" -> s"【extra_info】\n$extraInfo"
-              )
-            )
+          .foreach { level1Dir =>
+            val category = level1Dir.getName
+            
+            // 获取 2 级子目录
+            val level2Dirs = level1Dir.listFiles()
+              .filter(_.isDirectory)
+              .sortBy(_.getName)
+              .toList
+            
+            // 如果 category 不存在，创建新的列表
+            if (!categoryMap.contains(category)) {
+              categoryMap(category) = scala.collection.mutable.ListBuffer[Map[String, Any]]()
+            }
+            
+            // 遍历每个 2 级子目录
+            level2Dirs.foreach { level2Dir =>
+              val level2Name = level2Dir.getName
+              
+              // 查找 2 级目录下的图片和 markdown
+              val level2Image = findImageFile(level2Dir)
+              val level2Md = new File(level2Dir, "prompts_and_details.md")
+              val (source, prompt, extraInfo) = extractMarkdownSections(level2Md)
+              
+              // 如果 2 级目录有图片，添加到 cells
+              // 2 级子目录的名称作为 desc 的值
+              level2Image.foreach { img =>
+                val relativePath = s"$detailsDirName/${category}/${level2Name}/${img.getName}"
+                categoryMap(category) += Map(
+                  "image" -> relativePath,
+                  "desc" -> level2Name,  // 使用 2 级子目录的名称作为 desc
+                  "tooltip" -> Map(
+                    "source" -> s"【source】\n$source",
+                    "prompt" -> s"【prompt】\n$prompt",
+                    "extra_info" -> s"【extra_info】\n$extraInfo"
+                  )
+                )
+              }
+            }
           }
-        }
-        
+      }
+    }
+    
+    // 转换为 rows 列表
+    val rows = categoryMap.toList
+      .sortBy(_._1)  // 按 category 名称排序
+      .map { case (category, cells) =>
         Map(
           "category" -> category,
           "cells" -> cells.toList
         )
       }
       .filter(row => row("cells").asInstanceOf[List[?]].nonEmpty) // 只保留有 cells 的行
-      .toList
     
     // 转换为 JSON 字符串
     val rowsJson = rows.map { row =>
@@ -330,7 +345,7 @@ $rowsJson
   }
   
   // 更新 index.html
-  def updateIndexHtml(detailsDir: File, indexHtmlPath: String, detailsDirName: String): Unit = {
+  def updateIndexHtml(detailsDirs: List[(File, String)], indexHtmlPath: String): Unit = {
     val htmlFile = new File(indexHtmlPath)
     if (!htmlFile.exists()) {
       throw new RuntimeException(s"错误：$indexHtmlPath 不存在")
@@ -380,7 +395,7 @@ $rowsJson
       return
     }
     
-    val newTableData = generateTableData(detailsDir, detailsDirName)
+    val newTableData = generateTableData(detailsDirs)
     var updatedContent = htmlContent.substring(0, startIndex) + 
                         newTableData + 
                         htmlContent.substring(endIndex)
