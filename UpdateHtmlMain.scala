@@ -15,7 +15,7 @@ import scala.util.control.Breaks._
    * 
    * 本程序的主要功能是：
    * 1、检查 details_all 和 details_engineering 目录里的数据是否合法
-   * 2、如果合法，则生成 tableData JSON，并更新 index_all.html 文件：具体：
+   * 2、如果合法，则生成 tableData JSON，并更新 index.html 文件：具体：
    *   2.1、1 级子目录的名称，将作为表格的左侧列的分类名称；2 级子目录的名称，将作为表格里 desc 的具体取值
    *   2.2、HTML 文件里的副标题，日期要更新为今天的
    * 3、如果不合法，则打印错误信息
@@ -23,7 +23,7 @@ import scala.util.control.Breaks._
 object UpdateHtmlMain {
   val detailsAllDir = new File("details_all")
   val detailsEngineeringDir = new File("details_engineering")
-  val indexAllHtmlPath = "index_all.html"
+  val indexHtmlPath = "index.html"
   
   // 支持的图片扩展名
   val imageExtensions = Set(".jpg", ".jpeg", ".png", ".gif", ".webp")
@@ -33,10 +33,10 @@ object UpdateHtmlMain {
     println("开始生成 tableData...")
     checkDataDir(detailsAllDir, "details_all")
     checkDataDir(detailsEngineeringDir, "details_engineering")
-    // all 包含 all 和 engineering 两个目录
+    // index.html 包含 all 和 engineering 两个目录
     updateIndexHtml(
       List((detailsAllDir, "details_all"), (detailsEngineeringDir, "details_engineering")),
-      indexAllHtmlPath
+      indexHtmlPath
     )
     println("完成！")
   }
