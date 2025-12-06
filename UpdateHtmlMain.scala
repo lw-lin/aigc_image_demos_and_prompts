@@ -333,8 +333,7 @@ $rowsJson
   def updateIndexHtml(detailsDir: File, indexHtmlPath: String, detailsDirName: String): Unit = {
     val htmlFile = new File(indexHtmlPath)
     if (!htmlFile.exists()) {
-      println(s"警告：$indexHtmlPath 不存在，跳过更新")
-      return
+      throw new RuntimeException(s"错误：$indexHtmlPath 不存在")
     }
     
     val htmlContent = Source.fromFile(htmlFile, "UTF-8").mkString
