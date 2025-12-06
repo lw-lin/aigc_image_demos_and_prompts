@@ -14,15 +14,17 @@ import scala.util.control.Breaks._
    * 4、2 级子目录里，如果有其它文件，必须以 extra_ 开头
    * 
    * 本程序的主要功能是：
-   * 1、检查 details 目录里的数据是否合法
-   * 2、如果合法，则生成 tableData JSON，并更新 index.html 文件：具体：
+   * 1、检查 details_personal 和 details_work 目录里的数据是否合法
+   * 2、如果合法，则生成 tableData JSON，并更新 index_personal.html 和 index_work.html 文件：具体：
    *   2.1、1 级子目录的名称，将作为表格的左侧列的分类名称；2 级子目录的名称，将作为表格里 desc 的具体取值
-   *   2.2、index.html 文件里的副标题，日期要更新为今天的
+   *   2.2、HTML 文件里的副标题，日期要更新为今天的
    * 3、如果不合法，则打印错误信息
    */
 object UpdateHtmlMain {
-  val detailsDir = new File("details")
-  val indexHtmlPath = "index.html"
+  val detailsPersonalDir = new File("details_personal")
+  val detailsWorkDir = new File("details_work")
+  val indexPersonalHtmlPath = "index_personal.html"
+  val indexWorkHtmlPath = "index_work.html"
   
   // 支持的图片扩展名
   val imageExtensions = Set(".jpg", ".jpeg", ".png", ".gif", ".webp")
@@ -30,17 +32,19 @@ object UpdateHtmlMain {
 
   def main(args: Array[String]): Unit = {
     println("开始生成 tableData...")
-    checkDataDir()
-    updateIndexHtml()
+    checkDataDir(detailsPersonalDir, "details_personal")
+    checkDataDir(detailsWorkDir, "details_work")
+    updateIndexHtml(detailsPersonalDir, indexPersonalHtmlPath, "details_personal")
+    updateIndexHtml(detailsWorkDir, indexWorkHtmlPath, "details_work")
     println("完成！")
   }
 
   /**
    * 按照我们对 details 目录里的数据设计，检查数据是否合法
    */
-  def checkDataDir(): Unit = {
+  def checkDataDir(detailsDir: File, dirName: String): Unit = {
     if (!detailsDir.exists() || !detailsDir.isDirectory) {
-      throw new RuntimeException("错误：details 目录不存在")
+      throw new RuntimeException(s"错误：$dirName 目录不存在")
     }
     
     var hasError = false
@@ -49,9 +53,9 @@ object UpdateHtmlMain {
     val level1Dirs = detailsDir.listFiles().filter(_.isDirectory).toList
     val level1Files = detailsDir.listFiles().filter(_.isFile).toList
     
-    // 1. 检查 details 目录下不能有文件
+    // 1. 检查目录下不能有文件
     if (level1Files.nonEmpty) {
-      println(s"错误：details 目录下不能有文件，但发现了：${level1Files.map(_.getName).mkString(", ")}")
+      println(s"错误：$dirName 目录下不能有文件，但发现了：${level1Files.map(_.getName).mkString(", ")}")
       hasError = true
     }
     
@@ -228,7 +232,7 @@ object UpdateHtmlMain {
   }
   
   // 生成 tableData JSON
-  def generateTableData(): String = {
+  def generateTableData(detailsDir: File, detailsDirName: String): String = {
     if (!detailsDir.exists() || !detailsDir.isDirectory) {
       return """{
             "rows": []
@@ -262,7 +266,7 @@ object UpdateHtmlMain {
           // 如果 2 级目录有图片，添加到 cells
           // 2 级子目录的名称作为 desc 的值
           level2Image.foreach { img =>
-            val relativePath = s"details/${category}/${level2Name}/${img.getName}"
+            val relativePath = s"$detailsDirName/${category}/${level2Name}/${img.getName}"
             cells += Map(
               "image" -> relativePath,
               "desc" -> level2Name,  // 使用 2 级子目录的名称作为 desc
@@ -326,15 +330,21 @@ $rowsJson
   }
   
   // 更新 index.html
-  def updateIndexHtml(): Unit = {
-    val htmlContent = Source.fromFile(indexHtmlPath, "UTF-8").mkString
+  def updateIndexHtml(detailsDir: File, indexHtmlPath: String, detailsDirName: String): Unit = {
+    val htmlFile = new File(indexHtmlPath)
+    if (!htmlFile.exists()) {
+      println(s"警告：$indexHtmlPath 不存在，跳过更新")
+      return
+    }
+    
+    val htmlContent = Source.fromFile(htmlFile, "UTF-8").mkString
     
     // 查找 tableData 的开始和结束位置
     val startPattern = "const tableData = {"
     
     val startIndex = htmlContent.indexOf(startPattern)
     if (startIndex == -1) {
-      println("错误：在 index.html 中找不到 tableData 的开始位置")
+      println(s"错误：在 $indexHtmlPath 中找不到 tableData 的开始位置")
       return
     }
     
@@ -367,11 +377,11 @@ $rowsJson
     }
     
     if (endIndex == startIndex) {
-      println("错误：在 index.html 中找不到 tableData 的结束位置")
+      println(s"错误：在 $indexHtmlPath 中找不到 tableData 的结束位置")
       return
     }
     
-    val newTableData = generateTableData()
+    val newTableData = generateTableData(detailsDir, detailsDirName)
     var updatedContent = htmlContent.substring(0, startIndex) + 
                         newTableData + 
                         htmlContent.substring(endIndex)
