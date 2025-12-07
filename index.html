@@ -375,9 +375,23 @@
             header.className = 'page-header';
             const h1 = document.createElement('h1');
             h1.textContent = 'Awesome AI Generated Images and Prompts (All)';
+            // 计算图片总数
+            let totalImages = 0;
+            tableData.rows.forEach(row => {
+                if (row.cells) {
+                    totalImages += row.cells.length;
+                }
+            });
+            
             const subtitle = document.createElement('div');
             subtitle.className = 'subtitle';
-            subtitle.textContent = 'Last Update at 2025.12.06';
+            const totalImagesText = document.createElement('span');
+            totalImagesText.textContent = `# Total Images: ${totalImages}`;
+            const lastUpdateText = document.createElement('span');
+            lastUpdateText.textContent = 'Last Update at 2025.12.06';
+            lastUpdateText.style.marginLeft = '30px';
+            subtitle.appendChild(totalImagesText);
+            subtitle.appendChild(lastUpdateText);
             
             // 添加 "show all" 链接
             const showAllLink = document.createElement('a');
