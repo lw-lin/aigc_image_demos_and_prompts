@@ -28,6 +28,11 @@ object UpdateHtmlMain {
   // 支持的图片扩展名
   val imageExtensions = Set(".jpg", ".jpeg", ".png", ".gif", ".webp")
   
+  // 需要忽略的系统文件（如 .DS_Store）
+  def shouldIgnoreFile(file: File): Boolean = {
+    val name = file.getName
+    name == ".DS_Store" || name.startsWith(".")
+  }
 
   def main(args: Array[String]): Unit = {
     println("开始生成 tableData...")
@@ -53,9 +58,9 @@ object UpdateHtmlMain {
     
     // 检查 1 级子目录
     val level1Dirs = detailsDir.listFiles().filter(_.isDirectory).toList
-    val level1Files = detailsDir.listFiles().filter(_.isFile).toList
+    val level1Files = detailsDir.listFiles().filter(_.isFile).filterNot(shouldIgnoreFile).toList
     
-    // 1. 检查目录下不能有文件
+    // 1. 检查目录下不能有文件（忽略系统文件）
     if (level1Files.nonEmpty) {
       println(s"错误：$dirName 目录下不能有文件，但发现了：${level1Files.map(_.getName).mkString(", ")}")
       hasError = true
@@ -65,8 +70,8 @@ object UpdateHtmlMain {
     level1Dirs.foreach { level1Dir =>
       val level1Name = level1Dir.getName
       
-      // 检查 1 级子目录下不能有文件，只能有子文件夹（2级子目录）
-      val level1Files = level1Dir.listFiles().filter(_.isFile).toList
+      // 检查 1 级子目录下不能有文件，只能有子文件夹（2级子目录）（忽略系统文件）
+      val level1Files = level1Dir.listFiles().filter(_.isFile).filterNot(shouldIgnoreFile).toList
       if (level1Files.nonEmpty) {
         println(s"错误：1 级子目录 '$level1Name' 下不能有文件，但发现了：${level1Files.map(_.getName).mkString(", ")}")
         hasError = true
